@@ -95,7 +95,7 @@ formEl.addEventListener('submit', animalForm);
 
 function animalForm(evt) {
 evt.preventDefault();
-page = 1;
+
 searchQuery = evt.target.elements.searchQuery.value.trim();
 
 if (searchQuery) {
