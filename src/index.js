@@ -10,47 +10,41 @@ const loadMore = document.querySelector('.load-more');
 const BASE_URL = 'https://pixabay.com/api/';
 const KEY = '40708369-d6dc8a1f6c8c52c3bc15ef748';
 
-const PER_PAGE = 100;
+const PER_PAGE = 40;
 let currentPage = 1;
 let searchQuery = '';
 
 const ligthbox = new SimpleLightbox('.gallery a');
 
 async function searchAnimal(tags, page = 1) {
-try {
-const respons = await axios.get(`${BASE_URL}?key=${KEY}&q=${tags}
+    try {
+        const respons = await axios.get(`${BASE_URL}?key=${KEY}&q=${tags}
 &image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=${PER_PAGE}`)
-const { hits, totalHits } = respons.data;
-console.log(respons.data)
+        const { hits, totalHits } = respons.data;
+        console.log(respons.data)
 
-displayImage(hits);
-if (!totalHits) {
-Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.')
-} else {
-toggleLoadMoreButton(hits.length, totalHits);
-Notiflix.Notify.success('Hooray! We found totalHits images.');
-}
-
+        displayImage(hits);
+        if (!totalHits) {
+            Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.')
+        } 
+        else {
+            toggleLoadMoreButton(hits.length, totalHits);
+            }
 }
 catch (error) {
-console.log(error);
 Notiflix.Notify.failure('An error', error);
-}
+    }
 }
 
 function displayImage(images) {
-if (currentPage === 1) {
-gallery.innerHTML = "";
-}
+   
 const markup = createMarkup(images);
-gallery.insertAdjacentHTML('beforeend', markup);
-
-
-ligthbox.refresh();
+    gallery.insertAdjacentHTML('beforeend', markup);
+    ligthbox.refresh();
 }
 
 
-function createMarkup(arr = []) {
+function createMarkup(arr) {
 return arr.map(( { largeImageURL, webformatURL, likes, views, comments, downloads }) =>
 `<div class="photo-card">
     <a href="${largeImageURL}"><img src="${webformatURL}" alt="" loading="lazy" width='250' /></a>
@@ -73,14 +67,16 @@ return arr.map(( { largeImageURL, webformatURL, likes, views, comments, download
 
 function toggleLoadMoreButton(_, totalHits) {
 const remainingImage = totalHits - (currentPage * PER_PAGE);
-console.log('remainingImage', remainingImage)
-if (remainingImage > 0) {
-loadMore.style.display = "block";
-}else{
-loadMore.style.display = "none";
-Notiflix.Notify.failure("We're sorry, but you've reached the end of search results.")
-}
-
+    if (remainingImage > 0) {
+        loadMore.style.display = "block";
+        if (remainingImage === totalHits - PER_PAGE) {
+            Notiflix.Notify.success('Hooray! We found totalHits images.');
+        }
+    }
+     else {
+        loadMore.style.display = "none";
+        Notiflix.Notify.failure("We're sorry, but you've reached the end of search results.")
+    }
 }
 
 function smoothScrollToGallery() {
@@ -94,15 +90,15 @@ behavior: 'smooth',
 formEl.addEventListener('submit', animalForm);
 
 function animalForm(evt) {
-evt.preventDefault();
+    evt.preventDefault();
+    searchQuery = evt.target.elements.searchQuery.value.trim();
 
-searchQuery = evt.target.elements.searchQuery.value.trim();
-
-if (searchQuery) {
-searchAnimal(searchQuery);
-loadMore.style.display = 'none';
-gallery.innerHTML = ""
-}
+    if (searchQuery) {
+        searchAnimal(searchQuery);
+        loadMore.style.display = 'none';
+        gallery.innerHTML = " ";
+        currentPage = 1;
+    }
 }
 
 loadMore.addEventListener('click', onLoad);
@@ -110,6 +106,6 @@ loadMore.addEventListener('click', onLoad);
 function onLoad() {
 currentPage += 1;
 searchAnimal(searchQuery, currentPage);
-
+    
 smoothScrollToGallery();
 }
